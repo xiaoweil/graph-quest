@@ -17,21 +17,21 @@ Write a set of test functions that validate that the function in (1) is working 
 
 ### Solution Structure explained
 
-`main.go` provides sample usage
-`/graph` contains core logic
+`main.go` provides sample usage  
+`/graph` contains core logic  
 `/graph/*_test.go` contains test cases for core logic
 
-run `go run .` to see the output of sample usage
+run `go run .` to see the output of sample usage  
 run `go test ./...` to see test results
 
-### Logic overview
+### Logic Overview
 
 - `Graph` object holds the following data:
   1. `vertices` - slice contains sample vertices, insert during generation
   2. `edges` - contains edge relationships, insert during generation, used for display details only
   3. `neighborFunc` - check to see if 2 given vertices are neighbors, created during generation, used for finding connected subgraphs
-  4. `connectedSubgraphs` - tracks found connected subgraphs, populated on method call
-  5. `maximumConnectedSubgraphs` - tracks found connected subgraphs with maximum size, populated on method call
+  4. `connectedSubgraphs` - tracks found connected subgraphs, populated on a method call
+  5. `maximumConnectedSubgraphs` - tracks found connected subgraphs with maximum size, populated on a method call
 - `Graph` methods:
   1. `PrintDetails()` method prints all details of the graph
   2. `GetConnectedSubgraphs()` method finds all the connected subgraphs within the graph
