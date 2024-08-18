@@ -3,6 +3,7 @@ package graph
 import (
 	"math/rand"
 	"slices"
+	"sort"
 )
 
 /*
@@ -86,9 +87,21 @@ func generate(numOfVertices int, numOfEdges int, edges map[Vertex][]Vertex) *Gra
 		}
 	}
 
+	maxEdgeLength := 0
+	for _, val := range edges {
+		if len(val) > maxEdgeLength {
+			maxEdgeLength = len(val)
+		}
+
+		sort.Slice(val, func(i, j int) bool {
+			return val[i] < val[j]
+		})
+	}
+
 	return &Graph{
 		vertices:     vertices,
 		edges:        edges,
+		maxEdges:     maxEdgeLength,
 		neighborFunc: neighborFunc,
 	}
 }

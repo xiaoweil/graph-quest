@@ -7,8 +7,12 @@ import (
 
 // Helper method to print graph basic information
 func (g *Graph) PrintDetails() {
-	fmt.Printf("\nGraph details:\n")
-	fmt.Printf("Vertices: %v\n", g.vertices)
+	fmt.Printf("\nGraph details:\n\n")
+	if len(g.vertices) > 20 {
+		fmt.Printf("Vertices: %v ... %v\n", g.vertices[0], g.vertices[len(g.vertices)-1])
+	} else {
+		fmt.Printf("Vertices: %v\n", g.vertices)
+	}
 
 	// Sort vertex from small to large
 	keys := []int{}
@@ -25,17 +29,19 @@ func (g *Graph) PrintDetails() {
 
 	// Print found connected subgraphs
 	size, csgs := g.GetConnectedSubgraphs()
-	fmt.Printf("Found %v connected subgraphs.\n", size)
+	fmt.Printf("Found %v connected subgraphs:\n", size)
 	for _, csg := range csgs {
 		fmt.Println(csg)
 	}
+	fmt.Printf("Total: %v\n\n", size)
 
 	// Print found maximum subgraphs
 	mSize, mcsgs := g.GetMaximumConnectedSubgraphs()
-	fmt.Printf("Found %v maximum connected subgraphs.\n", mSize)
+	fmt.Printf("Found %v maximum connected subgraphs:\n", mSize)
 	for _, mcsg := range mcsgs {
 		fmt.Println(mcsg)
 	}
+	fmt.Printf("Total: %v\n", mSize)
 }
 
 // Find all connected subgraphs
@@ -43,13 +49,69 @@ func (g *Graph) GetConnectedSubgraphs() (int, [][]Vertex) {
 	numOfVertices := len(g.vertices)
 	// Only do the finding the first time, else return found subgraphs
 	if numOfVertices > 0 && len(g.connectedSubgraphs) == 0 {
-		g.search()
+		if g.maxEdges > EDGES_THRESHOLD {
+			g.dfsSearch()
+		} else {
+			g.bfsSearch()
+		}
 	}
 
 	return len(g.connectedSubgraphs), g.connectedSubgraphs
 }
 
-func (g *Graph) search() {
+func (g *Graph) bfsSearch() {
+	visited := make(map[Vertex]bool)
+
+	// Here we loop through all vertices in the graph
+	// We use a map to track all visited vertex
+	// We pass the current vertex and tracked visited to a bfs
+	// Add the return value from the bfs to connected subgraphs
+	for _, v := range g.vertices {
+		if !visited[v] {
+			connectedSubgraph := bfs(g, v, visited)
+
+			// Sort the values in the connected subgraphs
+			sort.Slice(connectedSubgraph, func(i, j int) bool {
+				return connectedSubgraph[i] < connectedSubgraph[j]
+			})
+
+			g.connectedSubgraphs = append(g.connectedSubgraphs, connectedSubgraph)
+		}
+	}
+}
+
+func bfs(graph *Graph, current Vertex, visited map[Vertex]bool) []Vertex {
+	// Queue for BFS
+	queue := []Vertex{current}
+	// List to keep track of connected vertices
+	connectedSubgraph := []Vertex{}
+
+	// Mark the start vertex as visited
+	visited[current] = true
+
+	// Process the queue
+	for len(queue) > 0 {
+		// Dequeue the first vertex
+		vertex := queue[0]
+		queue = queue[1:]
+
+		// Add it to the connected subgraph
+		connectedSubgraph = append(connectedSubgraph, vertex)
+
+		// Explore all neighbors
+		for _, neighbor := range graph.vertices {
+			if vertex != neighbor && !visited[neighbor] && graph.neighborFunc(vertex, neighbor) {
+				// Mark neighbor as visited and enqueue it
+				visited[neighbor] = true
+				queue = append(queue, neighbor)
+			}
+		}
+	}
+
+	return connectedSubgraph
+}
+
+func (g *Graph) dfsSearch() {
 	visited := make(map[Vertex]bool)
 
 	// Here we loop through all vertices in the graph
@@ -60,6 +122,12 @@ func (g *Graph) search() {
 		if !visited[v] {
 			var connectedSubgraph []Vertex
 			dfs(g, v, visited, &connectedSubgraph)
+
+			// Sort the values in the connected subgraphs
+			sort.Slice(connectedSubgraph, func(i, j int) bool {
+				return connectedSubgraph[i] < connectedSubgraph[j]
+			})
+
 			g.connectedSubgraphs = append(g.connectedSubgraphs, connectedSubgraph)
 		}
 	}
